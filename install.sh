@@ -1,16 +1,12 @@
 # -*- mode: Shell-script-*-
 #!/usr/bin/bash
 #
-export SHELL_DIR=${HOME}/shell
-
-sh $(dirname $0)/scripts/prepare-remote-machine
-
-# ZSH
-if [ ! -h "${HOME}/.zshrc" ] ; then
-    ln -s ${SHELL_DIR}/zshrc/zsh ~/.zshrc
-fi
+export SHELL_DIR=${HOME}/dotfiles
 
 chsh -s /bin/zsh
+
+# Configuration for multiple programs
+sh ${SHELL_DIR}/rc/install.sh
 
 # SSH
 if [ ! -h "${HOME}/.ssh/config" ] ; then
@@ -25,8 +21,10 @@ if [ ! -h "${HOME}/.gnupg/gpg-agent.conf" ] ; then
 fi
 
 # GIT
+if [ ! -h "${HOME}/.gitconfig" ] ; then
+  ln -s ${SHELL_DIR}/git/gitconfig ~/.gitconfig
+fi
+
 if [ ! -h "${HOME}/.gitignore" ] ; then
     ln -s ${SHELL_DIR}/git/gitignore ~/.gitignore
 fi
-
-sudo update-alternatives --config wish
