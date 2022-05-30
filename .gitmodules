@@ -1,3 +1,0 @@
-[submodule "zshrc/completions"]
-	path = zshrc/completions
-	url = git@github.com:zsh-users/zsh-completions.git

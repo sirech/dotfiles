@@ -166,6 +166,9 @@
 [includeIf "gitdir:~/.zprezto/"]
   path = ~/mine/gitconfig
 
+[includeIf "gitdir:~/dotfiles/"]
+  path = ~/mine/gitconfig
+
 [includeIf "gitdir:~/.spacemacs.d/"]
   path = ~/mine/gitconfig
 
