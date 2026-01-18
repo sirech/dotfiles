@@ -78,13 +78,6 @@ set smartindent                   " Better indentation heuristics
 autocmd FileType yaml,yml setlocal tabstop=2 shiftwidth=2 expandtab
 autocmd FileType markdown setlocal tabstop=2 shiftwidth=2 expandtab
 
-" --- Status line ---
-set laststatus=2                  " Show the status line all the time
-
-" Useful status information at bottom of screen
-" (simplified: removed CapsLockStatusline dependency)
-set statusline=[%n]\ %<%.99f\ %h%w%m%r%y%=%-16(\ %l,%c\ %)%P
-
 " --- Window behavior ---
 set splitright                    " Vertical splits open to the right
 set splitbelow                    " Horizontal splits open below
@@ -100,3 +93,127 @@ nnoremap <silent> <leader>tp :tabprevious<CR>
 nnoremap <silent> <leader>tf :tabfirst<CR>
 nnoremap <silent> <leader>tl :tablast<CR>
 nnoremap <silent> <leader>tm :tabmove<Space>
+
+" --- Airline-ish statusline (plugin-free, no git) ---
+set laststatus=2
+set noshowmode
+
+let g:sl_left  = ''
+let g:sl_right = ''
+
+function! StatuslineModeLabel() abort
+  let l:m = mode()
+  return get({
+        \ 'n':  'NORMAL',
+        \ 'i':  'INSERT',
+        \ 'v':  'VISUAL',
+        \ 'V':  'V-LINE',
+        \ "\<C-v>": 'V-BLOCK',
+        \ 'R':  'REPLACE',
+        \ 'c':  'COMMAND',
+        \ 't':  'TERMINAL',
+        \ }, l:m, toupper(l:m))
+endfunction
+
+function! StatuslineModeHi() abort
+  let l:m = mode()
+
+  " Normal/Insert/Replace/Command/Terminal
+  if l:m ==# 'n' | return 'User9'  " NORMAL
+  elseif l:m ==# 'i' | return 'User1'  " INSERT
+  elseif l:m ==# 'R' | return 'User3'  " REPLACE
+  elseif l:m ==# 'c' | return 'User10' " COMMAND-LINE
+  elseif l:m ==# 't' | return 'User11' " TERMINAL
+
+  " Visual
+  elseif l:m ==# 'v' | return 'User2'  " VISUAL
+  elseif l:m ==# 'V' | return 'User12' " V-LINE
+  elseif l:m ==# "\<C-v>" | return 'User13' " V-BLOCK
+
+  " Select mode (rare but exists)
+  elseif l:m ==# 's' | return 'User14' " SELECT
+  elseif l:m ==# 'S' | return 'User15' " S-LINE
+  elseif l:m ==# "\<C-s>" | return 'User16' " S-BLOCK
+
+  " Fallback
+  else | return 'User9'
+  endif
+endfunction
+
+function! StatuslineFlags() abort
+  let l:f = []
+  if &modified | call add(l:f, '+')     | endif
+  if &readonly | call add(l:f, 'RO')    | endif
+  if &paste    | call add(l:f, 'PASTE') | endif
+  return empty(l:f) ? '' : join(l:f, ' ')
+endfunction
+
+function! StatuslineFileName() abort
+  "return empty(expand('%:t')) ? '[No Name]' : expand('%:t')
+  return empty(expand('%:~:.')) ? '[No Name]' : expand('%:~:.')
+endfunction
+
+function! StatuslineEnc() abort
+  return empty(&fileencoding) ? &encoding : &fileencoding
+endfunction
+
+" Base statusline
+hi StatusLine   cterm=NONE ctermfg=white ctermbg=darkgray
+hi StatusLineNC cterm=NONE ctermfg=gray  ctermbg=black
+
+" Separators / non-mode segments (keep your existing if you prefer)
+hi User5  cterm=NONE ctermfg=black  ctermbg=darkgray  " separators
+hi User6  cterm=NONE ctermfg=white  ctermbg=darkgray  " file
+hi User7  cterm=NONE ctermfg=yellow ctermbg=darkgray  " flags
+hi User8  cterm=NONE ctermfg=white  ctermbg=darkgray  " right side
+
+" Mode colors (Spacemacs/Powerline-ish)
+hi User9  cterm=bold ctermfg=black ctermbg=green      " NORMAL
+hi User1  cterm=bold ctermfg=black ctermbg=blue       " INSERT
+hi User2  cterm=bold ctermfg=black ctermbg=magenta    " VISUAL
+hi User12 cterm=bold ctermfg=black ctermbg=darkmagenta " V-LINE
+hi User13 cterm=bold ctermfg=black ctermbg=magenta    " V-BLOCK
+
+hi User3  cterm=bold ctermfg=black ctermbg=red        " REPLACE
+hi User10 cterm=bold ctermfg=black ctermbg=214        " COMMAND
+hi User11 cterm=bold ctermfg=black ctermbg=cyan       " TERMINAL
+
+hi User14 cterm=bold ctermfg=black ctermbg=cyan       " SELECT
+hi User15 cterm=bold ctermfg=black ctermbg=darkcyan   " S-LINE
+hi User16 cterm=bold ctermfg=black ctermbg=cyan       " S-BLOCK
+
+" Build statusline safely (no :set escaping issues)
+function! StatuslineBuild() abort
+  let l:sl = ''
+
+  " Mode segment (dynamic highlight)
+  let l:sl .= '%#' . StatuslineModeHi() . '# ' . StatuslineModeLabel() . ' '
+  let l:sl .= '%#User5#' . g:sl_left . '%*'
+
+  " File segment
+  let l:sl .= '%#User6# ' . StatuslineFileName() . ' '
+  let l:sl .= '%#User5#' . g:sl_left . '%*'
+
+  " Flags segment (only if non-empty)
+  let l:flags = StatuslineFlags()
+  if !empty(l:flags)
+    let l:sl .= '%#User7# ' . l:flags . ' '
+    let l:sl .= '%#StatusLine#%*'
+  endif
+
+  " Right align
+  let l:sl .= '%='
+
+  " Right: filetype + encoding + fileformat
+  let l:sl .= '%#User5#' . g:sl_right . '%*'
+  let l:sl .= '%#User8# %y ' . StatuslineEnc() . ' %{&fileformat} %*'
+
+  " Right: position
+  let l:sl .= '%#User5#' . g:sl_right . '%*'
+  let l:sl .= '%#User8# %l:%c %p%% %*'
+
+  return l:sl
+endfunction
+
+set statusline=%!StatuslineBuild()
+
