@@ -9,12 +9,12 @@ filetype plugin indent on         " Turn on file type detection.
 
 set encoding=utf-8
 
-set backspace=indent,eol,start    " Intuitive backspacing.
-set hidden                        " Handle multiple buffers better.
-
-" --- UI ---
 set showcmd                       " Display incomplete commands.
 set showmode                      " Display the mode you're in.
+
+set backspace=indent,eol,start    " Intuitive backspacing.
+
+set hidden                        " Handle multiple buffers better.
 
 set wildmenu                      " Enhanced command line completion.
 set wildmode=list:longest         " Complete files like a shell.
@@ -22,11 +22,10 @@ set wildmode=list:longest         " Complete files like a shell.
 set number                        " Show line numbers.
 set ruler                         " Show cursor position.
 
-set scrolloff=3                   " Show 3 lines of context around the cursor.
-set title                         " Set the terminal's title
-set visualbell                    " No beeping.
-
-set laststatus=2                  " Show the status line all the time
+" --- Mappings ---
+" Remap escape
+" (changed from <C-a> to avoid conflicts and recursion)
+inoremap jk <Esc>
 
 " --- Search ---
 set incsearch                     " Highlight matches as you type.
@@ -34,13 +33,37 @@ set hlsearch                      " Highlight matches.
 set ignorecase                    " Case-insensitive searching.
 set smartcase                     " But case-sensitive if expression contains a capital letter.
 
+" Clear search highlight
+let mapleader=" "
+nnoremap <silent> <leader>h :nohlsearch<CR>
+
 " --- Wrapping ---
 set wrap                          " Turn on line wrapping.
+set linebreak                     " Break lines at word boundaries
+set breakindent                   " Indent wrapped lines
+set showbreak=↪\                 " Show wrap indicator
 
-" --- Files / swap / backup ---
+" Move by visual lines when wrapping
+nnoremap j gj
+nnoremap k gk
+
+set scrolloff=3                   " Show 3 lines of context around the cursor.
+
+set title                         " Set the terminal's title
+
+set visualbell                    " No beeping.
+
+" --- Files / backup / undo ---
 set nobackup                      " Don't make a backup before overwriting a file.
 set nowritebackup                 " And again.
 set directory=$HOME/.vim/tmp//,.  " Keep swap files in one location
+
+" Persistent undo
+set undofile
+set undodir=$HOME/.vim/undo//,.
+
+set confirm                       " Ask instead of failing on unsaved changes
+set autoread                      " Reload files changed outside Vim
 
 " --- Indentation ---
 " UNCOMMENT TO USE
@@ -48,21 +71,32 @@ set directory=$HOME/.vim/tmp//,.  " Keep swap files in one location
 "set shiftwidth=2                 " And again, related.
 "set expandtab                    " Use spaces instead of tabs
 
-" --- Statusline ---
+set autoindent                    " Sensible auto indentation
+set smartindent                   " Better indentation heuristics
+
+" Filetype-specific indentation
+autocmd FileType yaml,yml setlocal tabstop=2 shiftwidth=2 expandtab
+autocmd FileType markdown setlocal tabstop=2 shiftwidth=2 expandtab
+
+" --- Status line ---
+set laststatus=2                  " Show the status line all the time
+
 " Useful status information at bottom of screen
-set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLockStatusline():''}%=%-16(\ %l,%c-%v\ %)%P
+" (simplified: removed CapsLockStatusline dependency)
+set statusline=[%n]\ %<%.99f\ %h%w%m%r%y%=%-16(\ %l,%c\ %)%P
 
-" --- Mappings ---
-" Remap escape
-:imap <C-a> <Esc>
+" --- Window behavior ---
+set splitright                    " Vertical splits open to the right
+set splitbelow                    " Horizontal splits open below
 
+" --- Tabs ---
 " Tab mappings.
-map <leader>tt :tabnew<cr>
-map <leader>te :tabedit
-map <leader>tc :tabclose<cr>
-map <leader>to :tabonly<cr>
-map <leader>tn :tabnext<cr>
-map <leader>tp :tabprevious<cr>
-map <leader>tf :tabfirst<cr>
-map <leader>tl :tablast<cr>
-map <leader>tm :tabmove
+nnoremap <silent> <leader>tt :tabnew<CR>
+nnoremap <silent> <leader>te :tabedit<Space>
+nnoremap <silent> <leader>tc :tabclose<CR>
+nnoremap <silent> <leader>to :tabonly<CR>
+nnoremap <silent> <leader>tn :tabnext<CR>
+nnoremap <silent> <leader>tp :tabprevious<CR>
+nnoremap <silent> <leader>tf :tabfirst<CR>
+nnoremap <silent> <leader>tl :tablast<CR>
+nnoremap <silent> <leader>tm :tabmove<Space>
