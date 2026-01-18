@@ -78,21 +78,43 @@ set smartindent                   " Better indentation heuristics
 autocmd FileType yaml,yml setlocal tabstop=2 shiftwidth=2 expandtab
 autocmd FileType markdown setlocal tabstop=2 shiftwidth=2 expandtab
 
+" --- Editor behavior ---
+
+" Clipboard: use system clipboard locally, avoid messing with it over SSH
+if has('clipboard')
+  set clipboard^=unnamed,unnamedplus
+endif
+
 " --- Window behavior ---
 set splitright                    " Vertical splits open to the right
 set splitbelow                    " Horizontal splits open below
 
-" --- Tabs ---
-" Tab mappings.
-nnoremap <silent> <leader>tt :tabnew<CR>
-nnoremap <silent> <leader>te :tabedit<Space>
-nnoremap <silent> <leader>tc :tabclose<CR>
-nnoremap <silent> <leader>to :tabonly<CR>
-nnoremap <silent> <leader>tn :tabnext<CR>
-nnoremap <silent> <leader>tp :tabprevious<CR>
-nnoremap <silent> <leader>tf :tabfirst<CR>
-nnoremap <silent> <leader>tl :tablast<CR>
-nnoremap <silent> <leader>tm :tabmove<Space>
+" --- Bindings ---
+
+" File mappings.
+nnoremap <silent> <leader>fs :w<CR>         " file save
+nnoremap <silent> <leader>fS :wa<CR>        " save all
+nnoremap <silent> <leader>ff :edit <Space>  " find/open file (built-in)
+nnoremap <silent> <leader>fr :e #<CR>       " recent: last file (cheap fallback)
+
+" buffer mappings.
+nnoremap <silent> <leader>bb :ls<CR>:b<Space>   " list + switch
+nnoremap <silent> <leader>bn :bnext<CR>         " next buffer
+nnoremap <silent> <leader>bp :bprevious<CR>     " prev buffer
+nnoremap <silent> <leader>bd :bdelete<CR>       " kill buffer
+nnoremap <silent> <leader>bw :bwipeout<CR>      " wipe buffer
+
+" window mappings.
+nnoremap <silent> <leader>ws :split<CR>
+nnoremap <silent> <leader>wv :vsplit<CR>
+nnoremap <silent> <leader>wc :close<CR>
+nnoremap <silent> <leader>wo :only<CR>
+
+" Navigate splits (Spacemacs-like)
+nnoremap <silent> <leader>wh <C-w>h
+nnoremap <silent> <leader>wj <C-w>j
+nnoremap <silent> <leader>wk <C-w>k
+nnoremap <silent> <leader>wl <C-w>l
 
 " --- Airline-ish statusline (plugin-free, no git) ---
 set laststatus=2
@@ -216,4 +238,3 @@ function! StatuslineBuild() abort
 endfunction
 
 set statusline=%!StatuslineBuild()
-
